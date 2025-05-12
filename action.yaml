@@ -1,0 +1,49 @@
+name: "Goalie Selection and Slack Notification"
+description: "Select a goalie from a text file, update the goalie, and notify a Slack channel."
+
+inputs:
+  file-path:
+    description: "Path to the text file with the list of people"
+    required: true
+  slack-token:
+    description: "Slack API token"
+    required: true
+  slack-channels:
+    description: "Comma-separated list of Slack channel IDs to notify"
+    required: true
+  user-group-handle:
+    description: "Slack user group to add the goalie to"
+    required: true
+  mode:
+    description: "Goalie rotation mode: fixed_full, no_deputy, former_goalie_is_deputy, or next_as_deputy"
+    required: false
+    default: "next_as_deputy"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+        
+    - name: Install Python packages
+      shell: bash
+      env:
+        GH_ACTION_PATH: ${{ github.action_path }}
+      run: |
+        pip install -e ${GH_ACTION_PATH}/scripts
+
+    - name: Run Goalie Selection Script
+      shell: bash
+      env:
+        GH_ACTION_PATH: ${{ github.action_path }}
+      run: |
+        python3 ${GH_ACTION_PATH}/scripts/goalie/goalie_manager.py --file-path "${{ inputs.file-path }}" \
+                                --slack-token "${{ inputs.slack-token }}" \
+                                --slack-channels "${{ inputs.slack-channels }}" \
+                                --user-group-handle "${{ inputs.user-group-handle }}" \
+                                --mode "${{ inputs.mode }}"
+                                   
+  
+
