@@ -7,7 +7,4 @@ setup(
     install_requires=[
         'slack_sdk'
     ],
-    extras_require={
-        'dev': ['pytest']
-    },
 )
