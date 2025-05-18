@@ -1,5 +1,5 @@
 name: "Goalie Selection and Slack Notification"
-description: "Select a goalie from a text file, update the goalie, and notify a Slack channel."
+description: "Select a goaliebot from a text file, update the goaliebot, and notify a Slack channel."
 
 inputs:
   file-path:
@@ -12,7 +12,7 @@ inputs:
     description: "Comma-separated list of Slack channel IDs to notify"
     required: true
   user-group-handle:
-    description: "Slack user group to add the goalie to"
+    description: "Slack user group to add the goaliebot to"
     required: true
   mode:
     description: "Goalie rotation mode: fixed_full, no_deputy, former_goalie_is_deputy, or next_as_deputy"
@@ -39,7 +39,7 @@ runs:
       env:
         GH_ACTION_PATH: ${{ github.action_path }}
       run: |
-        python3 ${GH_ACTION_PATH}/scripts/goalie/goalie_manager.py --file-path "${{ inputs.file-path }}" \
+        python3 -m ${GH_ACTION_PATH}/goaliebot.main --file-path "${{ inputs.file-path }}" \
                                 --slack-token "${{ inputs.slack-token }}" \
                                 --slack-channels "${{ inputs.slack-channels }}" \
                                 --user-group-handle "${{ inputs.user-group-handle }}" \

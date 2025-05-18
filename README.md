@@ -82,7 +82,7 @@ jobs:
           file-path: 'scripts/goalie_rotation.txt'
           mode: 'next_as_deputy'
           slack-channels: 'C01ABCD2345'
-          user-group-handle: '@goalie'
+          user-group-handle: '@goaliebot'
 
 ```
 
