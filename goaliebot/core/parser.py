@@ -1,4 +1,6 @@
 from .models import SlackUser
+from .models import Command
+import argparse
 
 
 def parse_goalie_line(line: str) -> SlackUser:
@@ -17,3 +19,13 @@ def parse_fixed_full_line(line: str):
     deputy = SlackUser(deputy_handle, deputy_id)
     is_current_goalie = "**" in goalie_part
     return goalie, deputy, is_current_goalie
+
+
+def parse_commands(value: str | None):
+    if not value or not value.strip():
+        # Default to all commands
+        return list(Command)
+    try:
+        return [Command(cmd.strip()) for cmd in value.split("|") if cmd.strip()]
+    except ValueError as e:
+        raise argparse.ArgumentTypeError(f"Invalid command in list: {e}")

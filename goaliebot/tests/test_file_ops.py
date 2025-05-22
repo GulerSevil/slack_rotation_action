@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import patch
-from goaliebot.rotation.file_ops import (
+from goaliebot.core.file_ops import (
     get_goalie_and_users,
     get_next_goalie_and_deputy,
     update_goalie_file,
@@ -30,7 +30,7 @@ def create_file(tmp_path):
     return _create
 
 
-@patch("goaliebot.rotation.file_ops.parse_goalie_line")
+@patch("goaliebot.core.file_ops.parse_goalie_line")
 def test_get_goalie_and_users_next_as_deputy(mock_parse_goalie_line, create_file):
     class User:
         def __init__(self, handle, user_id):
@@ -86,7 +86,7 @@ def test_get_next_goalie_and_deputy_modes(create_file):
     assert deputy.handle == "alice"
 
 
-@patch("goaliebot.rotation.file_ops.parse_fixed_full_line")
+@patch("goaliebot.core.file_ops.parse_fixed_full_line")
 def test_get_next_goalie_and_deputy_fixed_full(mock_parse_fixed_full_line, create_file):
     class User:
         def __init__(self, handle, user_id):
