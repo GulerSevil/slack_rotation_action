@@ -1,7 +1,8 @@
 /.idea/
 /.venv/
-/goalie.egg-info/
 /goaliebot/goaliebot.egg-info/
-/__pycache__/
 **/.pytest_cache/
 **/.DS_Store
+**/__pycache__/
+*.pyc
+/goaliebot.egg-info/

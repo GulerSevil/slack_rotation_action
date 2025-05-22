@@ -8,20 +8,45 @@ A custom GitHub Action that automatically rotates your team's goalie (on-call le
 
 - Rotates goalie and deputy based on a flat file
 - Supports multiple rotation modes: `next_as_deputy`, `former_goalie_is_deputy`, `no_deputy`, `fixed_full`
-- Posts current goalie to Slack
-- Easy to integrate in CI via GitHub Actions
+- Updates Slack user group
+- Optionally sends Slack messages and updates channel topics
+- Flexible command configuration via CLI or GitHub Actions
 
 ---
 
 ## 🧩 Inputs
 
-| Name                | Description                                                       | Required | Default         |
-|---------------------|-------------------------------------------------------------------|----------|-----------------|
-| `slack-token`       | Slack bot token with chat permission                              | ✅       | —               |
-| `slack-channels`    | A list of Slack channel IDs or names to send the notification to. | ✅       | —               |
-| `file-path`         | Path to the goalie rotation file                                  | ✅       | —               |
-| `mode`              | Rotation mode (`next_as_deputy`, `fixed_full`, etc.)              | ✅       | `next_as_deputy` |
-| `user-group-handle` | Slack user group handle to update (e.g., `@goalie`)               | ✅       | —               |
+| Name                | Description                                                                        | Required | Default           |
+|---------------------|------------------------------------------------------------------------------------|----------|-------------------|
+| `slack-token`       | Slack user token with permissions (see below)                                      | ✅       | —                 |
+| `slack-channels`    | Comma-separated list of Slack channel IDs (required only for some commands , or if commands omitted)       | ❌       | —                 |
+| `file-path`         | Path to the goalie rotation file                                                   | ✅       | —                 |
+| `mode`              | Rotation mode (`next_as_deputy`, `fixed_full`, etc.)                               | ✅       | `next_as_deputy`  |
+| `user-group-handle` | Slack user group handle (required for `update_user_group`, or if commands omitted) | ❌ | —          |
+| `commands`          | Pipe-separated list of Slack commands to run (see below)                           | ❌       | All commands      |
+
+- `slack-channels` is required **if**:
+    - `commands` is not provided (defaults to all commands)
+    - `commands` includes `send_slack_message`
+    - `commands` includes `update_topic_description`
+
+- `user-group-handle` is required **if**:
+    - `commands` is not provided (defaults to all commands)
+    - `commands` includes `update_user_group`
+
+---
+
+## ⚙️ Supported Commands
+
+The `commands` input accepts one or more of the following, separated by `|`:
+
+| Command                    | Description                                      |
+|----------------------------|--------------------------------------------------|
+| `update_user_group`        | Updates the user group with current goalie/deputy |
+| `update_topic_description` | Updates the Slack topic of the given channels   |
+| `send_slack_message`       | Sends a message to the specified channels       |
+
+If `commands` is not provided, **all commands will be executed by default**.
 
 ---
 
@@ -86,8 +111,9 @@ jobs:
           slack-token: ${{ secrets.SLACK_BOT_TOKEN }}
           file-path: 'scripts/goalie_rotation.txt'
           mode: 'next_as_deputy'
-          slack-channels: 'C01ABCD2345'
-          user-group-handle: '@goaliebot'
+          slack-channels: 'test-slack-channel'
+          commands: 'update_topic_description|send_slack_message'
+          user-group-handle: 'goaliebot'
 
       - name: Configure Git
         run: |
@@ -147,7 +173,7 @@ Store your Slack credentials in your GitHub repository's secrets:
 This rotation script is platform-agnostic and works with any CI/CD tool (GitHub Actions, GitLab CI, Jenkins, CircleCI, etc.). Simply run:
 
 ```bash
-python -m goaliebot.rotation_entry   --file-path path/to/goalie_schedule.txt ```
+python -m goaliebot.rotation_entry   --file-path path/to/goalie_schedule.txt ... ```
 
 ---
 

@@ -10,14 +10,18 @@ inputs:
     required: true
   slack-channels:
     description: "Comma-separated list of Slack channel IDs to notify"
-    required: true
+    required: false
   user-group-handle:
-    description: "Slack user group to add the goaliebot to"
-    required: true
+    description: "Slack user group handle (e.g., @goaliebot). Required if 'commands' is not set
+      or includes 'update_user_group".
+    required: false
   mode:
-    description: "Goalie rotation mode: fixed_full, no_deputy, former_goalie_is_deputy, or next_as_deputy"
+    description: "Goalie core mode: fixed_full, no_deputy, former_goalie_is_deputy, or next_as_deputy"
     required: false
     default: "next_as_deputy"
+  commands:
+    description: "Pipe-separated commands to run: update_topic_description, update_user_group, send_slack_message"
+    required: false
 
 runs:
   using: "composite"
@@ -41,7 +45,8 @@ runs:
                                 --slack-token "${{ inputs.slack-token }}" \
                                 --slack-channels "${{ inputs.slack-channels }}" \
                                 --user-group-handle "${{ inputs.user-group-handle }}" \
-                                --mode "${{ inputs.mode }}"
+                                --mode "${{ inputs.mode }}" \
+                                --commands "${{ inputs.commands }}"
                                    
   
 
