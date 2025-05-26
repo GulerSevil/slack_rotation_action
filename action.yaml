@@ -12,8 +12,8 @@ inputs:
     description: "Comma-separated list of Slack channel IDs to notify"
     required: false
   user-group-handle:
-    description: "Slack user group handle (e.g., @goaliebot). Required if 'commands' is not set
-      or includes 'update_user_group".
+    description: "Slack user group handle. Required if commands is not set
+      or includes update_user_group"
     required: false
   mode:
     description: "Goalie core mode: fixed_full, no_deputy, former_goalie_is_deputy, or next_as_deputy"
