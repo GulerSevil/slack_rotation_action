@@ -24,6 +24,7 @@ A custom GitHub Action that automatically rotates your team's goalie (on-call le
 | `mode`              | Rotation mode (`next_as_deputy`, `fixed_full`, etc.)                               | ✅       | `next_as_deputy`  |
 | `user-group-handle` | Slack user group handle (required for `update_user_group`, or if commands omitted) | ❌ | —          |
 | `commands`          | Pipe-separated list of Slack commands to run (see below)                           | ❌       | All commands      |
+| `cadence`           | Rotation cadence (`day`, `week`, `month`)                                  | ❌       | `week`            |
 
 - `slack-channels` is required **if**:
     - `commands` is not provided (defaults to all commands)
@@ -56,6 +57,15 @@ If `commands` is not provided, **all commands will be executed by default**.
 - **`former_goalie_is_deputy`**: The previous goalie becomes deputy.
 - **`no_deputy`**: Only goalie is rotated.
 - **`fixed_full`**: Goalie and deputy are pre-paired in the file.
+
+---
+## 📆 Supported Cadence
+
+- **`day`**: Rotation happens daily.
+- **`week`**: Rotation happens weekly (default).
+- **`month`**: Rotation happens monthly.
+
+> 📝 The cadence input controls how the rotation period is described in Slack notifications. Actual scheduling still depends on your CI/CD cron configuration.
 
 ---
 
@@ -106,7 +116,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Rotate and Notify
-        uses: GulerSevil/slack_rotation_action@main
+        uses: GulerSevil/slack_rotation_action@v1.0.3
         with:
           slack-token: ${{ secrets.SLACK_BOT_TOKEN }}
           file-path: 'scripts/goalie_rotation.txt'
@@ -114,6 +124,7 @@ jobs:
           slack-channels: 'test-slack-channel'
           commands: 'update_topic_description|send_slack_message'
           user-group-handle: 'goaliebot'
+          cadence: 'week'
 
       - name: Configure Git
         run: |
@@ -180,8 +191,7 @@ python -m goaliebot.rotation_entry   --file-path path/to/goalie_schedule.txt ...
 ## 🧠 Tips
 
 - Run this action weekly using cron to automate on-call rotations.
-- Keep `goalie.txt` in version control for auditability.
-- To dry-run locally, set environment variables and call `main.py`.
+- Keep `goalie_schedule.txt` in version control for auditability.
 
 ---
 

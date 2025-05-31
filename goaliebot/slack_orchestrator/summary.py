@@ -2,9 +2,10 @@ from goaliebot.core.models import Command
 
 
 def print_success_summary(
-    next_goalie, next_deputy, slack_channels, user_group_id, commands
+    next_goalie, next_deputy, slack_channels, user_group_id, commands, cadence
 ):
     print("\n✅ Goalie rotation complete!")
+    print(f"ℹ️ Cadence: {cadence}")
     print(f"👮 Goalie      : {next_goalie.handle} (<@{next_goalie.user_id}>)")
     if next_deputy:
         print(f"🛡️ Deputy      : {next_deputy.handle} (<@{next_deputy.user_id}>)")

@@ -1,24 +1,62 @@
 import pytest
 import sys
 from goaliebot.core.models import Command
-from goaliebot.rotation_entry import validate_inputs
+from goaliebot.rotation_entry import resolve_effective_commands, validate_required_inputs
 
 
-def test_validate_slack_channels_passes_with_required_channels(monkeypatch):
+# ✅ Tests for resolve_effective_commands
+
+def test_resolve_effective_commands_returns_input_if_provided():
     commands = [Command.SEND_SLACK_MESSAGE]
-    slack_channels = "C123 C456"
-    # Should not raise or exit
-    validate_inputs(commands, slack_channels)
+    assert resolve_effective_commands(commands) == commands
+
+def test_resolve_effective_commands_returns_all_if_none():
+    commands = None
+    result = resolve_effective_commands(commands)
+    assert set(result) == set(Command)
 
 
-def test_validate_slack_channels_passes_when_no_commands():
-    # If no commands are passed, it should pass regardless of slack_channels
-    validate_inputs([], None)
+# ✅ Tests for validate_required_inputs
+
+def test_validate_required_inputs_passes_when_channels_and_user_group_provided():
+    commands = [Command.SEND_SLACK_MESSAGE, Command.UPDATE_USER_GROUP]
+    slack_channels = "C123"
+    user_group_handle = "goaliebot"
+    validate_required_inputs(commands, slack_channels, user_group_handle)  # should not exit
 
 
-def test_validate_slack_channels_exits_if_channels_missing(monkeypatch):
-    commands = [Command.UPDATE_TOPIC_DESCRIPTION]
-    with pytest.raises(SystemExit) as exit_info:
-        validate_inputs(commands, None)
-    assert exit_info.type == SystemExit
-    assert exit_info.value.code == 1
+def test_validate_required_inputs_fails_if_channels_missing():
+    commands = [Command.SEND_SLACK_MESSAGE]
+    slack_channels = None
+    user_group_handle = None
+    with pytest.raises(SystemExit) as e:
+        validate_required_inputs(commands, slack_channels, user_group_handle)
+    assert e.type == SystemExit
+    assert e.value.code == 1
+
+
+def test_validate_required_inputs_fails_if_user_group_handle_missing():
+    commands = [Command.UPDATE_USER_GROUP]
+    slack_channels = "C123"
+    user_group_handle = None
+    with pytest.raises(SystemExit) as e:
+        validate_required_inputs(commands, slack_channels, user_group_handle)
+    assert e.type == SystemExit
+    assert e.value.code == 1
+
+
+def test_validate_required_inputs_passes_if_no_channels_required():
+    commands = [Command.UPDATE_USER_GROUP]
+    slack_channels = None  # no channels needed
+    user_group_handle = "goaliebot"
+    validate_required_inputs(commands, slack_channels, user_group_handle)
+
+
+def test_validate_required_inputs_fails_if_all_commands_but_inputs_missing():
+    commands = list(Command)
+    slack_channels = None
+    user_group_handle = None
+    with pytest.raises(SystemExit) as e:
+        validate_required_inputs(commands, slack_channels, user_group_handle)
+    assert e.type == SystemExit
+    assert e.value.code == 1

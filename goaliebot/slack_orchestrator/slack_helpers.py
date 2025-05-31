@@ -6,10 +6,23 @@ from goaliebot.slack_api import (
 from goaliebot.core.models import Command
 
 
-def compose_goalie_notification(next_goalie, next_deputy, user_group_id):
+def format_cadence_text(cadence):
+    cadence_str = cadence.value if hasattr(cadence, "value") else cadence
+    if cadence_str == "day":
+        return "today"
+    elif cadence_str == "week":
+        return "this week"
+    elif cadence_str == "month":
+        return "this month"
+    else:
+        return f"this {cadence_str}"
+
+
+def compose_goalie_notification(next_goalie, next_deputy, user_group_id, cadence):
+    cadence_text = format_cadence_text(cadence)
     if next_deputy:
         return (
-            f"🎉 <@{next_goalie.user_id}> is the goalie today! "
+            f"🎉 <@{next_goalie.user_id}> is the goalie {cadence_text}! "
             f"👮‍♂️ Your trusty deputy is <@{next_deputy.user_id}> 🙌. "
             f"Give the team a nudge with <!subteam^{user_group_id}>! 🎉"
         )

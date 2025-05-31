@@ -2,6 +2,7 @@ import sys
 import argparse
 from goaliebot.core.parser import parse_commands
 from goaliebot.core.models import Command
+from goaliebot.core.models import Cadence
 
 from goaliebot.core.file_ops import (
     get_goalie_and_users,
@@ -14,61 +15,30 @@ from goaliebot.slack_api.usergroup import get_user_group_id
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Notify Slack about the goalie.")
-    parser.add_argument(
-        "--file-path", required=True, help="Path to the text file with users"
-    )
+    parser.add_argument("--file-path", required=True, help="Path to the text file with users")
     parser.add_argument("--slack-token", required=True, help="Slack API token")
-    parser.add_argument(
-        "--slack-channels",
-        required=False,
-        help="Space-separated list of Slack channels to notify (required if using channel-based commands)",
-    )
-    parser.add_argument(
-        "--user-group-handle",
-        required=False,
-        help="Slack user group handle to update (required if using update_user_group command)",
-    )
-
-    parser.add_argument(
-        "--commands",
-        required=False,
-        type=parse_commands,
-        help=(
-            "Pipe-separated list of commands to run. "
-            "If not set, all optional Slack commands will be executed."
-        ),
-    )
-
-    parser.add_argument(
-        "--mode",
-        default="next_as_deputy",
-        choices=[
-            "next_as_deputy",
-            "former_goalie_is_deputy",
-            "no_deputy",
-            "fixed_full",
-        ],
-        help="Mode of deputy assignment",
-    )
+    parser.add_argument("--slack-channels", required=False, help="Space-separated list of Slack channels to notify (required if using channel-based commands)")
+    parser.add_argument("--user-group-handle", required=False, help="Slack user group handle to update (required if using update_user_group command)")
+    parser.add_argument("--commands", required=False, type=parse_commands, help="Pipe-separated list of commands to run. If not set, all optional Slack commands will be executed.")
+    parser.add_argument("--mode", default="next_as_deputy", choices=["next_as_deputy", "former_goalie_is_deputy", "no_deputy", "fixed_full"], help="Mode of deputy assignment")
+    parser.add_argument("--cadence", type=Cadence, choices=list(Cadence), default=Cadence.WEEK, help="Cadence of rotation: day, week, month, year (default: week)")
     return parser.parse_args()
 
 
-def validate_inputs(commands, slack_channels, user_group_handle):
-    # Validate slack_channels if any relevant command is used
+def resolve_effective_commands(commands):
+    return commands or list(Command)
+
+
+def validate_required_inputs(effective_commands, slack_channels, user_group_handle):
     requires_channels = {Command.SEND_SLACK_MESSAGE, Command.UPDATE_TOPIC_DESCRIPTION}
-    if any(cmd in commands for cmd in requires_channels):
+    if any(cmd in effective_commands for cmd in requires_channels):
         if not slack_channels:
-            print(
-                "❌ '--slack-channels' must be set if using 'send_slack_message' or 'update_topic_description' commands."
-            )
+            print("❌ '--slack-channels' must be set if using 'send_slack_message' or 'update_topic_description' commands.")
             sys.exit(1)
 
-    # Validate user_group_handle if user group update is included
-    if Command.UPDATE_USER_GROUP in commands:
+    if Command.UPDATE_USER_GROUP in effective_commands:
         if not user_group_handle:
-            print(
-                "❌ '--user-group-handle' must be set if using 'update_user_group' command."
-            )
+            print("❌ '--user-group-handle' must be set if using 'update_user_group' command.")
             sys.exit(1)
 
 
@@ -93,8 +63,8 @@ def resolve_user_group_id(slack_token, handle):
 
 def main():
     args = parse_args()
-
-    validate_inputs(args.commands, args.slack_channels, args.user_group_handle)
+    effective_commands = resolve_effective_commands(args.commands)
+    validate_required_inputs(effective_commands, args.slack_channels, args.user_group_handle)
 
     next_goalie, next_deputy = resolve_goalie_rotation(args.file_path, args.mode)
     print(f"✅ Next goalie: {next_goalie.handle} ({next_goalie.user_id})")
@@ -103,15 +73,14 @@ def main():
 
     slack_channels = args.slack_channels.split() if args.slack_channels else []
 
-    commands = args.commands or list(Command)  # Default to all commands
-
     run_slack_commands(
         slack_token=args.slack_token,
         slack_channels=slack_channels,
         next_goalie=next_goalie,
         next_deputy=next_deputy,
         user_group_id=user_group_id,
-        commands=commands,
+        commands=effective_commands,
+        cadence=args.cadence,
     )
 
     update_goalie_file(

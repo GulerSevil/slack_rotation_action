@@ -22,6 +22,10 @@ inputs:
   commands:
     description: "Pipe-separated commands to run: update_topic_description, update_user_group, send_slack_message"
     required: false
+  cadence:
+    description: "Cadence of rotation: day, week, month (default: week)"
+    required: false
+    default: "week"
 
 runs:
   using: "composite"
@@ -46,7 +50,8 @@ runs:
                                 --slack-channels "${{ inputs.slack-channels }}" \
                                 --user-group-handle "${{ inputs.user-group-handle }}" \
                                 --mode "${{ inputs.mode }}" \
-                                --commands "${{ inputs.commands }}"
+                                --commands "${{ inputs.commands }}" \
+                                --cadence "${{ inputs.cadence }}"
                                    
   
 

@@ -9,11 +9,18 @@ import sys
 
 
 def run_slack_commands(
-    slack_token, slack_channels, next_goalie, next_deputy, user_group_id, commands
+    slack_token,
+    slack_channels,
+    next_goalie,
+    next_deputy,
+    user_group_id,
+    commands,
+    cadence,
 ):
     client = WebClient(token=slack_token)
-    message = compose_goalie_notification(next_goalie, next_deputy, user_group_id)
-
+    message = compose_goalie_notification(
+        next_goalie, next_deputy, user_group_id, cadence
+    )
     try:
         perform_slack_rotation_updates(
             client,
@@ -25,7 +32,7 @@ def run_slack_commands(
             commands,
         )
         print_success_summary(
-            next_goalie, next_deputy, slack_channels, user_group_id, commands
+            next_goalie, next_deputy, slack_channels, user_group_id, commands, cadence
         )
     except SlackApiError as e:
         print(
