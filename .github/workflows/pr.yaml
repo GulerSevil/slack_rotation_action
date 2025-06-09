@@ -11,7 +11,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4.2.2
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -29,3 +29,12 @@ jobs:
       - name: Run Tests
         run: |
           pytest
+
+      - name: Run yamllint
+        uses: ibiqlik/action-yamllint@v3
+        with:
+          file_or_dir: '.'
+          config_file: '.yamllint.yml'
+
+      - name: Run actionlint
+        uses: raven-actions/actionlint@v2.0.1
