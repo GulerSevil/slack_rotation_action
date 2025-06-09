@@ -60,46 +60,47 @@ def update_goalie_file(file_path, next_goalie, deputy=None, mode="next_as_deputy
             lines = f.readlines()
 
         updated_lines = []
+        goalie_marked = False
 
         for line in lines:
             original = line.strip()
             if not original:
-                updated_lines.append(original)
+                updated_lines.append("")
                 continue
 
             if mode == "fixed_full":
-                parts = [part.strip() for part in original.split("|")]
-                goalie_handle, goalie_id = map(
-                    str.strip, parts[0].replace("**", "").split(",")
-                )
-                deputy_part = parts[1].strip() if len(parts) > 1 else ""
+                parts = [p.strip() for p in original.split("|")]
+                goalie_info = parts[0].replace("**", "").strip()
+                deputy_info = parts[1].strip() if len(parts) > 1 else ""
 
-                if goalie_handle == next_goalie.handle:
-                    goalie_part = f"{goalie_handle} **, {goalie_id}"
-                    deputy_part = (
-                        f"{deputy.handle}, {deputy.user_id}" if deputy else deputy_part
-                    )
+                goalie_handle, goalie_id = map(str.strip, goalie_info.split(","))
+                is_goalie = goalie_handle == next_goalie.handle
+
+                if is_goalie and not goalie_marked:
+                    goalie_info = f"{goalie_handle} **, {goalie_id}"
+                    deputy_info = f"{deputy.handle}, {deputy.user_id}" if deputy else deputy_info
+                    goalie_marked = True
                 else:
-                    goalie_part = f"{goalie_handle}, {goalie_id}"
+                    goalie_info = f"{goalie_handle}, {goalie_id}"
 
-                updated_line = f"{goalie_part} | {deputy_part}"
+                updated_lines.append(f"{goalie_info} | {deputy_info}")
 
             else:
                 handle, user_id = map(str.strip, original.replace("**", "").split(","))
-                updated_line = (
-                    f"{handle} **, {user_id}"
-                    if handle == next_goalie.handle
-                    else f"{handle}, {user_id}"
-                )
+                is_goalie = handle == next_goalie.handle and user_id == next_goalie.user_id
 
-            updated_lines.append(updated_line)
+                updated_line = f"{handle} **, {user_id}" if is_goalie and not goalie_marked else f"{handle}, {user_id}"
+                if is_goalie:
+                    goalie_marked = True
+
+                updated_lines.append(updated_line)
 
         with open(file_path, "w") as f:
             f.writelines(f"{line}\n" for line in updated_lines)
 
-        print(
-            f"✅ Goalie file updated: Goalie = {next_goalie.handle}, Deputy = {deputy.handle if deputy else 'None'}"
-        )
+        print(f"✅ Goalie file updated: Goalie = {next_goalie.handle}, Deputy = {deputy.handle if deputy else 'None'}")
 
     except Exception as e:
         print(f"❌ Error updating goalie file: {e}")
+
+

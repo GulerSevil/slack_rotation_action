@@ -15,8 +15,9 @@ carol, U34567
 """
 
 FIXED_FULL_LINES = """
-**alice, U12345 | bob, U23456
+alice **, U12345 | bob, U23456
 carol, U34567 | dave, U45678
+alice, U12345 | sss, U23456
 """
 
 
@@ -137,3 +138,31 @@ carol, U3
     assert all(
         ("alice **" not in line and "carol **" not in line) for line in updated_lines
     )
+
+def test_update_goalie_file_fixed_full_duplicate_names(create_file):
+    class User:
+        def __init__(self, handle, user_id):
+            self.handle = handle
+            self.user_id = user_id
+
+    duplicate_content = """
+alice, U1 | bob, U2
+carol, U3 | dave, U4
+carol, U3 | frank, U6
+    """
+    file_path = create_file(duplicate_content)
+
+    next_goalie = User("carol", "U3")
+    deputy = User("dave", "U4")
+
+    update_goalie_file(file_path, next_goalie, deputy, mode="fixed_full")
+
+    updated_lines = open(file_path).read().strip().splitlines()
+
+    # Only one line should have "carol **"
+    goalie_marked_lines = [line for line in updated_lines if "carol **" in line]
+    assert len(goalie_marked_lines) == 1
+    assert "dave" in goalie_marked_lines[0]
+    # The second "carol" should not be marked
+    other_lines = [line for line in updated_lines if "carol **" not in line]
+    assert all("carol **" not in line for line in other_lines)
