@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "goaliebot"
+version = "0.1.0"
+description = "A GitHub Action that automatically rotates your team's goalie (on-call lead) and updates Slack"
+readme = "README.md"
+license = {file = "LICENSE"}
+authors = [
+    {name = "Sevil Guler"}
+]
+keywords = ["slack", "rotation", "github-action", "on-call"]
+requires-python = ">=3.8"
+dependencies = [
+    "slack_sdk>=3.0.0",
+    "click>=8.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "flake8",
+    "black",
+    "pytest-cov",
+]
+
+[project.urls]
+Homepage = "https://github.com/GulerSevil/slack_rotation_action"
+Repository = "https://github.com/GulerSevil/slack_rotation_action"
+
+[project.scripts]
+goaliebot = "goaliebot.rotation_entry:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+packages = ["goaliebot", "goaliebot.core", "goaliebot.slack_api", "goaliebot.operations"]
+
+[tool.black]
+line-length = 88
+
+[tool.flake8]
+max-line-length = 88
+extend-ignore = ["E203", "W503"]
+
+[tool.pytest.ini_options]
+testpaths = ["src/goaliebot/tests"]
+addopts = ["--cov=goaliebot", "--cov-report=term-missing"] 

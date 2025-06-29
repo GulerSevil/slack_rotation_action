@@ -1,8 +1,25 @@
-/.idea/
-/.venv/
-/goaliebot/goaliebot.egg-info/
-**/.pytest_cache/
-**/.DS_Store
-**/__pycache__/
+# Python
+__pycache__/
 *.pyc
-/goaliebot.egg-info/
+*.pyo
+
+# Build artifacts
+*.egg-info/
+build/
+dist/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Environment
+.env
+.venv/
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
