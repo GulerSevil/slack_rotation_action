@@ -3,10 +3,11 @@ from .parser import parse_goalie_line, parse_fixed_full_line
 
 def get_goalie_and_users(file_path, mode="next_as_deputy"):
     current_goalie = None
+    current_goalie_index = -1
     users = []
 
     with open(file_path, "r") as f:
-        for line in f:
+        for line_index, line in enumerate(f):
             line = line.strip()
             if line.startswith("#") or not line:
                 continue
@@ -15,21 +16,26 @@ def get_goalie_and_users(file_path, mode="next_as_deputy"):
                 goalie, _, is_current_goalie = parse_fixed_full_line(line)
                 if is_current_goalie:
                     current_goalie = goalie
+                    current_goalie_index = len(users)  # Index in the users list
                 users.append(goalie)
             else:
                 user = parse_goalie_line(line)
                 if "**" in line:
                     current_goalie = user
+                    current_goalie_index = len(users)  # Index in the users list
                 users.append(user)
 
-    return current_goalie, users
+    return current_goalie, users, current_goalie_index
 
 
-def get_next_goalie_and_deputy(file_path, users, current_goalie, mode="next_as_deputy"):
+def get_next_goalie_and_deputy(
+    file_path, users, current_goalie, current_goalie_index, mode="next_as_deputy"
+):
     """Rotate to next goalie and determine deputy based on mode."""
-    all_handles = [user.handle for user in users]
-    current_index = all_handles.index(current_goalie.handle)
-    next_index = (current_index + 1) % len(users)
+    if current_goalie_index < 0:
+        raise ValueError("Current goalie index not found")
+
+    next_index = (current_goalie_index + 1) % len(users)
     next_goalie = users[next_index]
 
     if mode == "no_deputy":
@@ -98,7 +104,9 @@ def _line_matches_goalie(line, goalie_handle):
     return current_handle == goalie_handle
 
 
-def _process_fixed_full_line(line, line_index, target_line_index, next_goalie, deputy, goalie_marked):
+def _process_fixed_full_line(
+    line, line_index, target_line_index, next_goalie, deputy, goalie_marked
+):
     """Process a single line for fixed_full mode."""
     parts = [p.strip() for p in line.split("|")]
     goalie_info = parts[0].replace("**", "").strip()
@@ -106,7 +114,7 @@ def _process_fixed_full_line(line, line_index, target_line_index, next_goalie, d
 
     goalie_handle, goalie_id = map(str.strip, goalie_info.split(","))
 
-    should_mark = (line_index == target_line_index and not goalie_marked)
+    should_mark = line_index == target_line_index and not goalie_marked
 
     if should_mark:
         goalie_info = f"{goalie_handle} **, {goalie_id}"
@@ -121,7 +129,7 @@ def _process_fixed_full_line(line, line_index, target_line_index, next_goalie, d
 def _process_standard_line(line, next_goalie, goalie_marked):
     """Process a single line for standard modes (not fixed_full)."""
     handle, user_id = map(str.strip, line.replace("**", "").split(","))
-    is_goalie = (handle == next_goalie.handle and user_id == next_goalie.user_id)
+    is_goalie = handle == next_goalie.handle and user_id == next_goalie.user_id
 
     if is_goalie and not goalie_marked:
         updated_line = f"{handle} **, {user_id}"
@@ -141,7 +149,9 @@ def update_goalie_file(file_path, next_goalie, deputy=None, mode="next_as_deputy
         target_line_index = -1
         if mode == "fixed_full":
             current_goalie_index = _find_current_goalie_index(lines)
-            target_line_index = _find_target_line_index(lines, current_goalie_index, next_goalie.handle)
+            target_line_index = _find_target_line_index(
+                lines, current_goalie_index, next_goalie.handle
+            )
 
         updated_lines = []
         goalie_marked = False

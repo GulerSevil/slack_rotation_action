@@ -49,12 +49,14 @@ def validate_required_inputs(effective_commands, slack_channels, user_group_hand
 
 
 def resolve_goalie_rotation(file_path, mode):
-    current_goalie, users = get_goalie_and_users(file_path, mode=mode)
+    current_goalie, users, current_goalie_index = get_goalie_and_users(
+        file_path, mode=mode
+    )
     if not current_goalie:
         print("❌ No current goalie marked with '**' in the file.")
         sys.exit(1)
     next_goalie, next_deputy = get_next_goalie_and_deputy(
-        file_path, users, current_goalie, mode=mode
+        file_path, users, current_goalie, current_goalie_index, mode=mode
     )
     return next_goalie, next_deputy
 

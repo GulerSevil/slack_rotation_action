@@ -92,7 +92,7 @@ def test_validate_cadence_callback():
 
 def test_cli_help():
     runner = CliRunner()
-    result = runner.invoke(main, ['--help'])
+    result = runner.invoke(main, ["--help"])
     assert result.exit_code == 0
     assert "Notify Slack about the goalie rotation" in result.output
     assert "--file-path" in result.output
@@ -108,21 +108,26 @@ def test_cli_missing_required_args():
 
 def test_cli_invalid_mode():
     runner = CliRunner()
-    result = runner.invoke(main, [
-        '--file-path', 'test.txt',
-        '--slack-token', 'token',
-        '--mode', 'invalid_mode'
-    ])
+    result = runner.invoke(
+        main,
+        ["--file-path", "test.txt", "--slack-token", "token", "--mode", "invalid_mode"],
+    )
     assert result.exit_code != 0
     assert "Invalid value for '--mode'" in result.output
 
 
 def test_cli_invalid_cadence():
     runner = CliRunner()
-    result = runner.invoke(main, [
-        '--file-path', 'test.txt',
-        '--slack-token', 'token',
-        '--cadence', 'invalid_cadence'
-    ])
+    result = runner.invoke(
+        main,
+        [
+            "--file-path",
+            "test.txt",
+            "--slack-token",
+            "token",
+            "--cadence",
+            "invalid_cadence",
+        ],
+    )
     assert result.exit_code != 0
     assert "Invalid value for '--cadence'" in result.output
