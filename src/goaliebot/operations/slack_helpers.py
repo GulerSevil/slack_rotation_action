@@ -27,7 +27,7 @@ def compose_goalie_notification(next_goalie, next_deputy, user_group_id, cadence
             f"Give the team a nudge with <!subteam^{user_group_id}>! 🎉"
         )
     return (
-        f"🎉 <@{next_goalie.user_id}> is the goalie today! No deputy assigned. "
+        f"🎉 <@{next_goalie.user_id}> is the goalie {cadence_text}! No deputy assigned. "
         f"Use <!subteam^{user_group_id}> to reach out. 🎯"
     )
 
